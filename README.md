@@ -5,7 +5,7 @@
 编码方式：卷积码  
 编码速率：1/2，2/3  
 均衡方式：MMSE  
-信道估计方式：IPNLMS （已被注释，效果不佳） 
+信道估计方式：IPNLMS （已被注释，效果不佳）  
 _ (1).mat: 一条Bellhop仿真的时变水声信道（行为多径维度，列为时间维度）
   
 Function: Simulate the BER of the OTFS transmission with different modulation and coding methods  
