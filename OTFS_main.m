@@ -2,7 +2,7 @@ clc
 clear
 close all
 rng('default')
-%% parameter settings  
+%% parameter settings
 M=64;
 N=16;
 Train_length_M=16;  % training symbols length
@@ -15,7 +15,7 @@ Mod = [2, 4, 8];
 Rate=[1/2, 2/3];
 
 Len_chan=40;
-N_channel=1; % channel num  
+N_channel=1; % channel num
 
 % training sequence
 M_mod=4;
@@ -31,7 +31,7 @@ MonteCarlo = 3;  % simulate 3 times, calcute average;
 
 
 for ch_idx=1 : num_channel
-    filename=['E:/channel/_ (', num2str(ch_idx), ').mat'];
+    filename=['_ (', num2str(ch_idx), ').mat'];
     load(filename);  % load hmat (channel matrix: rows is multipath, columns is time，Ts=2.5e-4)
     
     for SNR_idx=1:length(SNR)
@@ -41,16 +41,16 @@ for ch_idx=1 : num_channel
             for nRate = 1: length(Rate)
                 SER = zeros(1, MonteCarlo);
                 for ntime = 1: MonteCarlo
-                    %% Convolutional code  
-                    Rate_code = Rate(nRate);    % coding rate  
-                    len_ori_bit = len_symbol*mod_order*Rate_code;     % original bit  
-                    len_coded_bit = len_symbol*mod_order;     % coded bit  
+                    %% Convolutional code
+                    Rate_code = Rate(nRate);    % coding rate
+                    len_ori_bit = len_symbol*mod_order*Rate_code;     % original bit
+                    len_coded_bit = len_symbol*mod_order;     % coded bit
 
-                    % interleave  
+                    % interleave
                     pos = randperm(len_coded_bit);
                     inv_pos = zeros(1, len_coded_bit);
                     inv_pos(pos) = 1 : len_coded_bit;
-                    % coding trellis  
+                    % coding trellis
                     
                     if Rate_code == 1/3
                         trellis = poly2trellis(3, [7,5,4]);
@@ -68,7 +68,7 @@ for ch_idx=1 : num_channel
 
                     data_info = qammod(data_info, M_mod);
 
-                    %% pilot&data  
+                    %% pilot&data
 
                     data_info_1 = reshape(data_info(1:Train_length_N*(M-Train_length_M)), Train_length_N, []);
                     data_info_2 = reshape(data_info((Train_length_N)*(M-Train_length_M)+1 : end), N-Train_length_N, []);
@@ -89,7 +89,7 @@ for ch_idx=1 : num_channel
                     data_OTFS_CP = [data_OTFS(N*M-Len_chan+1 : N*M); data_OTFS];
                     data_OTFS_CP_filter = 0;
                     sigma_2 = 10^(-SNR(SNR_idx)/10);
-                    %% UWA channel  
+                    %% UWA channel
                     for itao = 1:Len_chan+1
                     data_OTFS_CP_filter_temp=data_OTFS_CP.*Channel_TD(itao,:).';
                     data_OTFS_CP_filter = data_OTFS_CP_filter+circshift([data_OTFS_CP_filter_temp;zeros(Len_chan,1)],(itao)-1);
