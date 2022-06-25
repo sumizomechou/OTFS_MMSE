@@ -2,22 +2,22 @@ clc
 clear
 close all
 rng('default')
-%% 发射数据参数设置
+%% parameter settings  
 M=64;
 N=16;
-Train_length_M=16;  % 训练符号长度
+Train_length_M=16;  % training symbols length
 Train_length_N=10;
 len_train_symbol=Train_length_N*Train_length_M;
 
 all_data=M*N ;
-len_symbol = all_data-len_train_symbol;  % 数据块长度
+len_symbol = all_data-len_train_symbol;  % data block length
 Mod = [2, 4, 8];
 Rate=[1/2, 2/3];
 
 Len_chan=40;
-N_channel=1; % 通道个数
+N_channel=1; % channel num  
 
-%训练序列 这个数据多数时候可以用PN代替
+% training sequence
 M_mod=4;
 train_data = randi(M_mod-1, Train_length_N, Train_length_M);
 % train_data = qammod(train_data, M_mod);
@@ -32,7 +32,7 @@ MonteCarlo = 3;  % simulate 3 times, calcute average;
 
 for ch_idx=1 : num_channel
     filename=['E:/channel/_ (', num2str(ch_idx), ').mat'];
-    load(filename);  % load hmat (channel matrix)
+    load(filename);  % load hmat (channel matrix: rows is multipath, columns is time，Ts=2.5e-4)
     
     for SNR_idx=1:length(SNR)
         for mod_idx = 1:length(Mod)
@@ -41,16 +41,16 @@ for ch_idx=1 : num_channel
             for nRate = 1: length(Rate)
                 SER = zeros(1, MonteCarlo);
                 for ntime = 1: MonteCarlo
-                    %% 卷积码
-                    Rate_code = Rate(nRate);    % 编码速率
-                    len_ori_bit = len_symbol*mod_order*Rate_code;     % 原始bit
-                    len_coded_bit = len_symbol*mod_order;     % 编码后bit
+                    %% Convolutional code  
+                    Rate_code = Rate(nRate);    % coding rate  
+                    len_ori_bit = len_symbol*mod_order*Rate_code;     % original bit  
+                    len_coded_bit = len_symbol*mod_order;     % coded bit  
 
-                    % 交织
+                    % interleave  
                     pos = randperm(len_coded_bit);
                     inv_pos = zeros(1, len_coded_bit);
                     inv_pos(pos) = 1 : len_coded_bit;
-                    % 编码
+                    % coding trellis  
                     
                     if Rate_code == 1/3
                         trellis = poly2trellis(3, [7,5,4]);
@@ -68,13 +68,13 @@ for ch_idx=1 : num_channel
 
                     data_info = qammod(data_info, M_mod);
 
-                    %% 导频+数据
+                    %% pilot&data  
 
                     data_info_1 = reshape(data_info(1:Train_length_N*(M-Train_length_M)), Train_length_N, []);
                     data_info_2 = reshape(data_info((Train_length_N)*(M-Train_length_M)+1 : end), N-Train_length_N, []);
 
                     data_info_pilot = zeros(N, M);
-                    data_info_pilot(1 : Train_length_N, 1 : Train_length_M) =  train_data;  %导频
+                    data_info_pilot(1 : Train_length_N, 1 : Train_length_M) =  train_data;  % pilot block
                     data_info_pilot(1 : Train_length_N, Train_length_M+1 : M) = data_info_1;
                     data_info_pilot(Train_length_N+1 : N, :) = data_info_2;
 
@@ -89,7 +89,7 @@ for ch_idx=1 : num_channel
                     data_OTFS_CP = [data_OTFS(N*M-Len_chan+1 : N*M); data_OTFS];
                     data_OTFS_CP_filter = 0;
                     sigma_2 = 10^(-SNR(SNR_idx)/10);
-                    %% UWA channel
+                    %% UWA channel  
                     for itao = 1:Len_chan+1
                     data_OTFS_CP_filter_temp=data_OTFS_CP.*Channel_TD(itao,:).';
                     data_OTFS_CP_filter = data_OTFS_CP_filter+circshift([data_OTFS_CP_filter_temp;zeros(Len_chan,1)],(itao)-1);
@@ -119,8 +119,8 @@ for ch_idx=1 : num_channel
 
                     data_demod=qamdemod(data_mod, M_mod);
                     data_bits = reshape(de2bi(data_demod, mod_order), [], 1);
-                    data_bits = data_bits(inv_pos); % 解交织
-                    detec_data = vitdec(data_bits, trellis, 34, 'trunc', 'hard');   % 解卷积码
+                    data_bits = data_bits(inv_pos); % deinterleave
+                    detec_data = vitdec(data_bits, trellis, 34, 'trunc', 'hard');   % decoding
                     
                     SER(ntime) = BER_Cacula(detec_data, data_info_bit);
                     
@@ -129,6 +129,7 @@ for ch_idx=1 : num_channel
                     %         [CH_OTFS_DD_es, Channel_TD_es] = MMSE_Channel_Estimation_IPNLMS(Len_chan, K_ff, M, N, x_trian, Train_length_M, Train_length_N, data_faded);
                     %         x_dect_OTFS_MMSE_es = OTFS_detection_MMSE_System(data_faded, CH_OTFS_DD_es.', sigma_2);
                     %         x_dect_OTFS_MMSE_es = x_dect_OTFS_MMSE_es.';
+                    
                 end
                 BER_known(ch_idx, (mod_idx-1)*length(Rate)+nRate) = mean(SER);
                 fprintf(['finished channel ', num2str(ch_idx), ', mod ', num2str(mod_idx), ', rate ', num2str(nRate), ' \n'])
@@ -136,4 +137,4 @@ for ch_idx=1 : num_channel
         end
     end
 end
-save('BER_data.mat', 'BER_known')
+% save('BER_data.mat', 'BER_known')  
