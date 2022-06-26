@@ -6,7 +6,7 @@
 编码速率：1/2，2/3  
 均衡方式：MMSE  
 信道估计方式：IPNLMS （已被注释，效果不佳）  
-_ (1).mat: 一条Bellhop仿真的时变水声信道（行为多径维度，列为时间维度）
+_ (1).mat: 一条Bellhop仿真的时变水声信道（行为时延维度，列为时间维度）
   
 Function: Simulate the BER of the OTFS transmission with different modulation and coding methods  
 Number of transmit channels: 1  
@@ -15,4 +15,4 @@ Encoding method: convolutional code
 Encoding rate: 1/2, 2/3  
 Equalization method: MMSE  
 Channel estimation method: IPNLMS (annotated, not very good)  
-_ (1).mat: A time-varying UWA channel simulated by Bellhop (rows are multipath dimension, columns are time dimension).  
+_ (1).mat: A time-varying UWA channel simulated by Bellhop (rows are delay dimension, columns are time dimension).  
